@@ -140,7 +140,44 @@ class WebGraph():
             for i in range(max_iterations):
                 xprev = x.detach().clone()
 
-                # compute the new x vector using Eq (5.1)
+                # Compute the new x vector using Eq (5.1)
+                xprev = xprev.squeeze()
+                #print("x.prev.shape:", xprev.shape)
+
+                # Find the first part of Eq (5.1): The product of epsilon*xprev^T*P
+                #print("P.shape:", self.P.shape)
+
+                PT = torch.t(self.P)
+                #print("PT.shape:", PT.shape)
+
+                xprevP = torch.matmul(PT, xprev)
+                b = epsilon*torch.t(xprevP)
+                #print("b.prev.shape:", b.shape)
+
+                # Calculate vector a s.t. a_i = 1 if row i of P is a dangling node, else it is zero
+                a = torch.zeros(n)
+                for i in range(0, n):
+                    indices = self.P[i].coalesce().indices()
+                    if indices.shape[1] == 0:
+                        a[i] = 1
+                #print("a.shape:", a.shape)
+
+                # Find the second part of Eq (5.1)
+                xprevT = torch.squeeze(torch.t(xprev))
+                #print("xprevT.shape:", xprevT.shape)
+
+                xprevTa = torch.dot(xprevT, a)
+                #print("xprevTa.shape:", xprevTa.shape)
+                
+                c = ((epsilon*xprevTa) + 1 - epsilon) * v
+
+                # Calculate x
+                #print("b.prev.shape:", b.shape)
+                #print("c.prev.shape:", c.shape)
+                x = torch.add(b, c)
+
+                x = x/torch.norm(x)
+
                 # FIXME: Task 1
                 # HINT: this can be done with a single call to the `torch.sparse.addmm` function,
                 # but you'll have to read the code above to figure out what variables should get passed to that function
