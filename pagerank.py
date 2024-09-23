@@ -105,6 +105,18 @@ class WebGraph():
         else:
             v = torch.zeros(n)
             # FIXME: implement Task 2
+            # for each index in the personalization vector:
+            #   get the url for the index (see the _index_to_url function)
+            #   check if the url satisfies the input query (see the url_satisfies_query function)
+            #   if so, set the corresponding index to one
+            # normalize the vector
+            for i in range(0, n):
+                url = self._index_to_url(i)
+                #print("url: ", url)
+                satisfies = url_satisfies_query(url, query)
+                #print("satisfies: ", satisfies)
+                if satisfies:
+                    v[i] = 1
         
         v_sum = torch.sum(v)
         assert(v_sum>0)
@@ -141,18 +153,10 @@ class WebGraph():
                 xprev = x.detach().clone()
 
                 # Compute the new x vector using Eq (5.1)
-                xprev = xprev.squeeze()
-                #print("x.prev.shape:", xprev.shape)
 
                 # Find the first part of Eq (5.1): The product of epsilon*xprev^T*P
-                #print("P.shape:", self.P.shape)
-
-                PT = torch.t(self.P)
-                #print("PT.shape:", PT.shape)
-
-                xprevP = torch.matmul(PT, xprev)
+                xprevP = torch.matmul(torch.t(self.P), xprev.squeeze())
                 b = epsilon*torch.t(xprevP)
-                #print("b.prev.shape:", b.shape)
 
                 # Calculate vector a s.t. a_i = 1 if row i of P is a dangling node, else it is zero
                 a = torch.zeros(n)
@@ -160,22 +164,16 @@ class WebGraph():
                     indices = self.P[i].coalesce().indices()
                     if indices.shape[1] == 0:
                         a[i] = 1
-                #print("a.shape:", a.shape)
 
                 # Find the second part of Eq (5.1)
                 xprevT = torch.squeeze(torch.t(xprev))
                 #print("xprevT.shape:", xprevT.shape)
-
                 xprevTa = torch.dot(xprevT, a)
                 #print("xprevTa.shape:", xprevTa.shape)
-                
                 c = ((epsilon*xprevTa) + 1 - epsilon) * v
 
                 # Calculate x
-                #print("b.prev.shape:", b.shape)
-                #print("c.prev.shape:", c.shape)
                 x = torch.add(b, c)
-
                 x = x/torch.norm(x)
 
                 # FIXME: Task 1
