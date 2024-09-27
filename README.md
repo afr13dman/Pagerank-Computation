@@ -2,7 +2,7 @@
 
 In this project, I created a simple search engine for the website <https://www.lawfareblog.com>, which provides legal analysis on US national security issues.
 
-In order to create a simple search engine, we use PageRank to return on the most important results. The paper, *Deeper Inside Pagerank* discusses how PageRank begins with a matrix _P_ which is a square nxn matrix whose element _$p_ij$_ is the probability of moving from state i (page i) to state j (page j). Then, the matrix undergoes transformation to become a stochastic, irreducible, and primitive matrix _$P^{-}^{-}$_.
+In order to create a simple search engine, we use PageRank to return on the most important results. The paper, *Deeper Inside Pagerank* discusses how PageRank begins with a matrix $P$ which is a square nxn matrix whose element $p_{ij}$ is the probability of moving from state i (page i) to state j (page j). Then, the matrix undergoes transformation to become a stochastic, irreducible, and primitive matrix $$\bar{\bar P}$$.
 
 ## Background
 
@@ -50,13 +50,13 @@ The `pagerank.py` file contains code for loading the graph CSV files and searchi
 
 ## Task 1: The Power Method
 
-Within the function `WebGraph.power_method`, we implemented the power method for calculated the PageRank of each node in the graph. The paper *Deeper Inside Pagerank* provided us with the following definition for `$x^k$`, the Pagerank vector:
-`$ x^k = x^{k-1}P^{-}^{-} = \alpha x^{k-1}P + (\alpha x^{k-1} a + (1-\alpha ) v$`.
-Here `$a$` is a vector of 1s and 0s, where the ith entry is 1 if the corresponding node is a dangling node (a node with no outlinks), otherwise the entry is 0, and `$v$` is a personalization vector which is a stochastic vector chosen by the user.
+Within the function `WebGraph.power_method`, we implemented the power method for calculated the PageRank of each node in the graph. The paper *Deeper Inside Pagerank* provided us with the following definition for $x^k$, the Pagerank vector:
+$` x^k = x^{k-1}\bar{\bar P} = \alpha x^{k-1}P + (\alpha x^{k-1} a + (1-\alpha ) v `$.
+Here $a$ is a vector of 1s and 0s, where the ith entry is 1 if the corresponding node is a dangling node (a node with no outlinks), otherwise the entry is 0, and $v$ is a personalization vector which is a stochastic vector chosen by the user.
 
-In the `WebGraph.power_method` function, we implented the equation `$ x^k = \alpha x^{k-1}P + (\alpha x^{k-1} a + (1-\alpha ) v$` because using the matrix _P_ allows us to do less computations and if _P_ is sparse, which it is, then the runtime will be much faster.
+In the `WebGraph.power_method` function, we implented the equation $`x^k = \alpha x^{k-1}P + (\alpha x^{k-1} a + (1-\alpha ) v`$ because using the matrix $P$ allows us to do less computations and if $P$ is sparse, which it is, then the runtime will be much faster.
 
-After implementing the `WebGraph.power_method` function, I examined the outcome for the following commands. We will see below that the file raises a `UserWarning` about a deprecated command. While this is important in the long term as the command will soon not be supported, for this project we will keep the same command, but the command (`torch.sparse.SparseTensor()`) can be replaced with `torch.sparse_coo_tensor()`.
+After implementing the `WebGraph.power_method` function, I examined the outcome for the following commands. We will see below that the file raises a `UserWarning` about a deprecated command. While this is important in the long term as the command will soon not be supported, for this project we will keep the same command, but the command `torch.sparse.SparseTensor()` can be replaced with `torch.sparse_coo_tensor()`.
 
 **Task 1, part 1:**
 ```
@@ -187,6 +187,7 @@ INFO:root:rank=9 pagerank=1.4240e-01 url=www.lawfareblog.com/lawfare-podcast-bon
 ```
 
 **Task 1, part 4:**
+
 The runtime of pagerank depends heavily on the eigengap of the $\bar{\bar P}$ matrix, which is bounded by the alpha parameter. The graph $P$ for <https://www.lawfareblog.com> naturally has a large eigengap and so is fast to compute for all alpha values,
 but the modified graph does not have a large eigengap and so requires a small alpha for fast convergence. A large alpha value implies that the structure of the webgraph has more influence on the final result, while a smaller alpha value ignores the structure of the webgraph.
 
@@ -362,6 +363,7 @@ INFO:root:rank=9 pagerank=7.2888e-02 url=www.lawfareblog.com/house-oversight-com
 ```
 
 **Task 2, part 2:**
+
 Another use of the `--personalization_vector_query` option is that we can find out what webpages are related to the coronavirus but don't directly mention the coronavirus.
 This can be used to map out what types of topics are similar to the coronavirus.
 
